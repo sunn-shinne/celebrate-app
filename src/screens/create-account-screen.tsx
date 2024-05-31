@@ -3,13 +3,63 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Colors, Radiuses } from "../constants/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import RouteNames from "../constants/route-names";
 import Button from "../components/button";
 import Input from "../components/input";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { CELEBRATE_AUTH } from "../../firebaseConfig";
+import Toast from "react-native-toast-message";
+import { RouteNames } from "../constants/route-names";
 
 const CreateAccountScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const auth = CELEBRATE_AUTH;
+
+  const handleCreateAccount = async () => {
+    if (loading) {
+      return;
+    }
+
+    if (email.length < 3) {
+      Toast.show({
+        type: "info",
+        text1: "Введите email",
+        autoHide: true,
+      });
+      return;
+    }
+
+    if (password.length === 0) {
+      Toast.show({
+        type: "info",
+        text1: "Введите пароль",
+        autoHide: true,
+      });
+      return;
+    }
+
+    if (password.length < 8) {
+      Toast.show({
+        type: "info",
+        text1: "Парольдолжен быть не меньше 8 символов",
+        autoHide: true,
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Не удалось зарегистрировать аккаунт",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={s.container}>
@@ -31,7 +81,11 @@ const CreateAccountScreen = ({ navigation }) => {
           />
 
           <View style={s.buttonWrapper}>
-            <Button title="Создать аккаунт" />
+            <Button
+              title="Создать аккаунт"
+              loading={loading}
+              onPress={handleCreateAccount}
+            />
           </View>
 
           <View style={s.loginHint}>
