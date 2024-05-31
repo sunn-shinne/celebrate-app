@@ -25,6 +25,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: Radiuses.M,
+    alignItems: "center",
+    height: 50,
   },
   inputFocused: {
     borderColor: Colors.SECONDARY,

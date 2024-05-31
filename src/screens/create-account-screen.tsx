@@ -1,20 +1,38 @@
 import { StatusBar } from "expo-status-bar";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  SectionListComponent,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Colors, Radiuses } from "../constants/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../components/button";
 import Input from "../components/input";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { CELEBRATE_AUTH } from "../../firebaseConfig";
+import { CELEBRATE_AUTH, CELEBRATE_DB } from "../../firebaseConfig";
 import Toast from "react-native-toast-message";
 import { RouteNames } from "../constants/route-names";
+import DropDownPicker from "react-native-dropdown-picker";
+import Holidays from "date-holidays";
+import { doc, setDoc } from "firebase/firestore";
+
+const hd = new Holidays();
 
 const CreateAccountScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [country, setCountry] = useState(null);
+
   const auth = CELEBRATE_AUTH;
+  const store = CELEBRATE_DB;
+
+  const [open, setOpen] = useState(false);
+  const [countries, setCountries] = useState([]);
 
   const handleCreateAccount = async () => {
     if (loading) {
@@ -25,6 +43,15 @@ const CreateAccountScreen = ({ navigation }) => {
       Toast.show({
         type: "info",
         text1: "Введите email",
+        autoHide: true,
+      });
+      return;
+    }
+
+    if (!country) {
+      Toast.show({
+        type: "info",
+        text1: "Выберите страну",
         autoHide: true,
       });
       return;
@@ -50,7 +77,16 @@ const CreateAccountScreen = ({ navigation }) => {
 
     try {
       setLoading(true);
-      await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
+      const response = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password.trim(),
+      );
+      if (response.user) {
+        await setDoc(doc(store, "users", auth.currentUser.uid), {
+          country,
+        });
+      }
     } catch (error) {
       Toast.show({
         type: "error",
@@ -60,6 +96,33 @@ const CreateAccountScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
+
+  const getCountries = () => {
+    if (loading) {
+      return;
+    }
+
+    try {
+      const response = hd.getCountries("ru");
+      if (response) {
+        setCountries(
+          Object.entries(response).map(([key, value]) => ({
+            label: value,
+            value: key,
+          })),
+        );
+      }
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: "Не удалось загрузить список стран",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => getCountries(), []);
 
   return (
     <SafeAreaView style={s.container}>
@@ -72,6 +135,7 @@ const CreateAccountScreen = ({ navigation }) => {
             onChangeText={setEmail}
             textContentType="emailAddress"
           />
+
           <Input
             secureTextEntry
             value={password}
@@ -80,10 +144,30 @@ const CreateAccountScreen = ({ navigation }) => {
             textContentType="password"
           />
 
+          <DropDownPicker
+            open={open}
+            value={country}
+            items={countries}
+            setOpen={setOpen}
+            setValue={setCountry}
+            placeholder="Страна"
+            style={{
+              borderColor: Colors.GREAY,
+              paddingHorizontal: 16,
+              borderRadius: Radiuses.M,
+            }}
+            dropDownContainerStyle={{
+              borderColor: Colors.GREAY,
+              borderRadius: Radiuses.M,
+            }}
+            placeholderStyle={{ color: Colors.GREAY }}
+          />
+
           <View style={s.buttonWrapper}>
             <Button
               title="Создать аккаунт"
               loading={loading}
+              disabled={!countries.length}
               onPress={handleCreateAccount}
             />
           </View>
@@ -112,7 +196,7 @@ const s = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     paddingHorizontal: 60,
-    paddingTop: 180,
+    paddingTop: 120,
   },
   logo: {
     width: 200,

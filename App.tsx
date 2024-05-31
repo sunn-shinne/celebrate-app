@@ -16,7 +16,8 @@ import CreateAccountScreen from "./src/screens/create-account-screen";
 import LoginScreen from "./src/screens/login-screen";
 import Toast, { InfoToast } from "react-native-toast-message";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { CELEBRATE_AUTH } from "./firebaseConfig";
+import { CELEBRATE_AUTH, CELEBRATE_DB } from "./firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -95,10 +96,23 @@ const AuthLayout = () => {
 
 export default function App() {
   const [user, setUser] = useState<User>(null);
+  const [country, setCountry] = useState<string>(null);
+
+  const getUsersCountry = async () => {
+    const docRef = doc(CELEBRATE_DB, "users", CELEBRATE_AUTH.currentUser.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      setCountry(docSnap.data().country);
+    }
+  };
 
   useEffect(() => {
     onAuthStateChanged(CELEBRATE_AUTH, (newUser) => {
-      setUser(newUser);
+      if (newUser.uid) {
+        setUser(newUser);
+        getUsersCountry();
+      }
       SplashScreen.hideAsync();
     });
   }, []);
