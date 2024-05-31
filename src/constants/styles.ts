@@ -17,3 +17,8 @@ export const Colors = {
 export const Fonsts = {
   SpaceMono,
 };
+
+export const Radiuses = {
+  S: 12,
+  M: 16,
+};

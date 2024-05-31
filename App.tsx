@@ -13,6 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable } from "react-native";
 import { Colors } from "./src/constants/styles";
 import RouteNames from "./src/constants/route-names";
+import CreateAccountScreen from "./src/screens/create-account-screen";
+import LoginScreen from "./src/screens/login-screen";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,7 +38,19 @@ export default function App() {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName={RouteNames.Home}>
+        <Stack.Navigator initialRouteName={RouteNames.CreateAccount}>
+          <Stack.Screen
+            name={RouteNames.CreateAccount}
+            component={CreateAccountScreen}
+            options={{ headerShown: false }}
+          />
+
+          <Stack.Screen
+            name={RouteNames.Login}
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+
           <Stack.Screen
             name={RouteNames.Home}
             component={HomeScreen}
