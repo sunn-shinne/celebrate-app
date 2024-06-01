@@ -25,6 +25,7 @@ const hd = new Holidays();
 const CreateAccountScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [country, setCountry] = useState(null);
 
@@ -41,7 +42,7 @@ const CreateAccountScreen = ({ navigation }) => {
       return;
     }
 
-    if (email.length < 3) {
+    if (email.trim().length < 3) {
       Toast.show({
         type: "info",
         text1: "Введите email",
@@ -59,7 +60,7 @@ const CreateAccountScreen = ({ navigation }) => {
       return;
     }
 
-    if (password.length === 0) {
+    if (password.trim().length === 0) {
       Toast.show({
         type: "info",
         text1: "Введите пароль",
@@ -68,10 +69,19 @@ const CreateAccountScreen = ({ navigation }) => {
       return;
     }
 
-    if (password.length < 8) {
+    if (password.trim().length < 8) {
       Toast.show({
         type: "info",
-        text1: "Парольдолжен быть не меньше 8 символов",
+        text1: "Пароль должен быть не меньше 8 символов",
+        autoHide: true,
+      });
+      return;
+    }
+
+    if (password.trim() !== passwordConfirm.trim()) {
+      Toast.show({
+        type: "info",
+        text1: "Пароли должны совпадать",
         autoHide: true,
       });
       return;
@@ -139,21 +149,13 @@ const CreateAccountScreen = ({ navigation }) => {
             textContentType="emailAddress"
           />
 
-          <Input
-            secureTextEntry
-            value={password}
-            placeholder="Пароль"
-            onChangeText={setPassword}
-            textContentType="password"
-          />
-
           <DropDownPicker
             open={open}
             value={country}
             items={countries}
             setOpen={setOpen}
             setValue={setCountry}
-            placeholder="Страна"
+            placeholder="Страна проживания"
             style={{
               borderColor: Colors.GREAY,
               paddingHorizontal: 16,
@@ -164,6 +166,22 @@ const CreateAccountScreen = ({ navigation }) => {
               borderRadius: Radiuses.M,
             }}
             placeholderStyle={{ color: Colors.GREAY }}
+          />
+
+          <Input
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            textContentType="password"
+            placeholder="Придумайте пароль"
+          />
+
+          <Input
+            secureTextEntry
+            value={passwordConfirm}
+            textContentType="password"
+            placeholder="Подтвердите пароль"
+            onChangeText={setPasswordConfirm}
           />
 
           <View style={s.buttonWrapper}>
@@ -199,7 +217,7 @@ const s = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     paddingHorizontal: 60,
-    paddingTop: 120,
+    paddingTop: 60,
   },
   logo: {
     width: 200,

@@ -30,6 +30,9 @@ const SettingsScreen = ({
   const [open, setOpen] = useState(false);
   const [countries, setCountries] = useState([]);
 
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
   const handleUserUpdate = async () => {
     if (loading) {
       return;
@@ -101,41 +104,72 @@ const SettingsScreen = ({
 
   return (
     <SafeAreaView style={s.container}>
-      <View style={s.user}>
-        <Text style={s.userTitle}>Пользователь</Text>
-        <Input
-          placeholder="email"
-          value={email}
-          onChangeText={setEmail}
-          textContentType="emailAddress"
-        />
+      <View>
+        <View style={s.user}>
+          <Text style={s.userTitle}>Пользователь</Text>
+          <Input
+            placeholder="email"
+            value={email}
+            onChangeText={setEmail}
+            textContentType="emailAddress"
+          />
 
-        <DropDownPicker
-          open={open}
-          value={country}
-          items={countries}
-          setOpen={setOpen}
-          setValue={setCountry}
-          placeholder="Страна"
-          style={{
-            borderColor: Colors.GREAY,
-            paddingHorizontal: 16,
-            borderRadius: Radiuses.M,
-          }}
-          dropDownContainerStyle={{
-            borderColor: Colors.GREAY,
-            borderRadius: Radiuses.M,
-          }}
-          placeholderStyle={{ color: Colors.GREAY }}
-        />
+          <DropDownPicker
+            open={open}
+            value={country}
+            items={countries}
+            setOpen={setOpen}
+            setValue={setCountry}
+            placeholder="Страна"
+            style={{
+              borderColor: Colors.GREAY,
+              paddingHorizontal: 16,
+              borderRadius: Radiuses.M,
+            }}
+            dropDownContainerStyle={{
+              borderColor: Colors.GREAY,
+              borderRadius: Radiuses.M,
+            }}
+            placeholderStyle={{ color: Colors.GREAY }}
+          />
 
-        <Button
-          title="Сохранить"
-          loading={loading}
-          onPress={handleUserUpdate}
-          disabled={!countries.length}
-        />
+          <Button
+            title="Сохранить"
+            loading={loading}
+            onPress={handleUserUpdate}
+            disabled={!countries.length}
+            color={Colors.SECONDARY}
+          />
+        </View>
+
+        {/* <View style={s.user}>
+          <Text style={s.userTitle}>Изменить пароль</Text>
+          <Input
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            textContentType="password"
+            placeholder="Введите пароль"
+          />
+
+          <Input
+            secureTextEntry
+            value={newPassword}
+            onChangeText={setNewPassword}
+            textContentType="newPassword"
+            placeholder="Введите новый пароль"
+          />
+
+          <Button
+            title="Сохранить"
+            loading={loading}
+            onPress={handleUserUpdate}
+            disabled={!countries.length}
+            color={Colors.SECONDARY}
+          />
+        </View> */}
       </View>
+
       <Pressable onPress={() => signOut(auth)} style={s.exit}>
         <Text style={{ color: Colors.SECONDARY, fontSize: 16 }}>Выйти</Text>
         <Ionicons name="exit-outline" size={18} color={Colors.SECONDARY} />
@@ -152,7 +186,7 @@ const s = StyleSheet.create({
     backgroundColor: Colors.WHITE,
     paddingHorizontal: 12,
   },
-  user: { gap: 12 },
+  user: { gap: 12, marginBottom: 48 },
   userTitle: { fontSize: 16, fontWeight: "500", paddingHorizontal: 12 },
   exit: {
     marginBottom: 24,
