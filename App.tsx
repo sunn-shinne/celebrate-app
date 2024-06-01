@@ -19,6 +19,12 @@ import { User, onAuthStateChanged } from "firebase/auth";
 import { APP_AUTH, APP_DB } from "./firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { IMainLayoutProps } from "./src/types/types";
+import {
+  QueryClient,
+  QueryClientConfig,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { holidayApi } from "./api/holidayApi";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,7 +39,10 @@ const MainLayout = (props: IMainLayoutProps) => {
         name={RouteNames.Home}
         children={() => <HomeScreen {...props} />}
         options={({ navigation }) => ({
-          title: "Что сегодня празднуем?",
+          title: "",
+          // headerStyle: { backgroundColor: Colors.GREAY },
+          headerShadowVisible: false, // applied here
+          headerBackTitleVisible: false,
           headerRight: () => (
             <Pressable onPress={() => navigation.navigate(RouteNames.Settings)}>
               <Ionicons
@@ -95,7 +104,20 @@ const AuthLayout = () => {
   );
 };
 
+const QUERY_CLIENT_CONFIG: QueryClientConfig = {
+  defaultOptions: {
+    queries: {
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+};
+
 export default function App() {
+  const [queryClient] = useState(() => new QueryClient(QUERY_CLIENT_CONFIG));
+
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(false);
   const [country, setCountry] = useState<string>(null);
@@ -133,63 +155,65 @@ export default function App() {
     onAuthStateChanged(APP_AUTH, async (newUser) => {
       setUser(newUser);
       await getUserCountry(newUser);
-      SplashScreen.hideAsync();
     });
+    SplashScreen.hideAsync();
   }, []);
 
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName={RouteNames.CreateAccount}>
-          {user ? (
-            <Stack.Screen
-              name={StackNames.Main}
-              options={{ headerShown: false }}
-              children={() => (
-                <MainLayout
-                  user={user}
-                  country={country}
-                  setCountry={setCountry}
-                />
-              )}
-            />
-          ) : (
-            <Stack.Screen
-              name={StackNames.Auth}
-              component={AuthLayout}
-              options={{ headerShown: false }}
-            />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
+      <QueryClientProvider client={queryClient}>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName={RouteNames.CreateAccount}>
+            {user && country ? (
+              <Stack.Screen
+                name={StackNames.Main}
+                options={{ headerShown: false }}
+                children={() => (
+                  <MainLayout
+                    user={user}
+                    country={country}
+                    setCountry={setCountry}
+                  />
+                )}
+              />
+            ) : (
+              <Stack.Screen
+                name={StackNames.Auth}
+                component={AuthLayout}
+                options={{ headerShown: false }}
+              />
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
 
-      <Toast
-        topOffset={60}
-        config={{
-          info: (props) => (
-            <InfoToast
-              {...props}
-              style={{ borderLeftColor: Colors.PRIMARY, width: "90%" }}
-              text1Style={{
-                fontSize: 14,
-                fontWeight: "400",
-                borderRadius: Radiuses.S,
-              }}
-            />
-          ),
-          success: (props) => (
-            <InfoToast
-              {...props}
-              style={{ borderLeftColor: Colors.SECONDARY, width: "90%" }}
-              text1Style={{
-                fontSize: 14,
-                fontWeight: "400",
-                borderRadius: Radiuses.S,
-              }}
-            />
-          ),
-        }}
-      />
+        <Toast
+          topOffset={60}
+          config={{
+            info: (props) => (
+              <InfoToast
+                {...props}
+                style={{ borderLeftColor: Colors.PRIMARY, width: "90%" }}
+                text1Style={{
+                  fontSize: 14,
+                  fontWeight: "400",
+                  borderRadius: Radiuses.S,
+                }}
+              />
+            ),
+            success: (props) => (
+              <InfoToast
+                {...props}
+                style={{ borderLeftColor: Colors.SECONDARY, width: "90%" }}
+                text1Style={{
+                  fontSize: 14,
+                  fontWeight: "400",
+                  borderRadius: Radiuses.S,
+                }}
+              />
+            ),
+          }}
+        />
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 }

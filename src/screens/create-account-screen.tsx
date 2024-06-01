@@ -1,12 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import {
-  Image,
-  Pressable,
-  SectionListComponent,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Colors, Radiuses } from "../constants/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
@@ -17,10 +10,9 @@ import { APP_AUTH, APP_DB } from "../../firebaseConfig";
 import Toast from "react-native-toast-message";
 import { RouteNames } from "../constants/route-names";
 import DropDownPicker from "react-native-dropdown-picker";
-import Holidays from "date-holidays";
 import { doc, setDoc } from "firebase/firestore";
-
-const hd = new Holidays();
+import { holidayApi } from "../../api/holidayApi";
+import { useQuery } from "@tanstack/react-query";
 
 const CreateAccountScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -33,9 +25,14 @@ const CreateAccountScreen = ({ navigation }) => {
   const store = APP_DB;
 
   const [open, setOpen] = useState(false);
-  const [countries, setCountries] = useState<
-    { label: string; value: string }[]
-  >([]);
+  // const [countries, setCountries] = useState<
+  //   { label: string; value: string }[]
+  // >([]);
+
+  const { data: countries = [], isLoading: isLoadingCountries } = useQuery({
+    queryKey: ["countries"],
+    queryFn: async () => await holidayApi.getCountries(),
+  });
 
   const handleCreateAccount = async () => {
     if (loading) {
@@ -95,10 +92,11 @@ const CreateAccountScreen = ({ navigation }) => {
         password.trim(),
       );
       if (response.user) {
-        await setDoc(doc(store, "users", auth.currentUser.uid), {
+        const userCountry = {
           countryCode: country,
-          countryName: countries.find((item) => item.value === country).label,
-        });
+          countryName: countries.find((c) => c.countryCode === country).name,
+        };
+        await setDoc(doc(store, "users", auth.currentUser.uid), userCountry);
       }
     } catch (error) {
       Toast.show({
@@ -109,33 +107,6 @@ const CreateAccountScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
-
-  const getCountries = () => {
-    if (loading) {
-      return;
-    }
-
-    try {
-      const response = hd.getCountries("ru");
-      if (response) {
-        setCountries(
-          Object.entries(response).map(([key, value]) => ({
-            label: value,
-            value: key,
-          })),
-        );
-      }
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Не удалось загрузить список стран",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => getCountries(), []);
 
   return (
     <SafeAreaView style={s.container}>
@@ -152,7 +123,10 @@ const CreateAccountScreen = ({ navigation }) => {
           <DropDownPicker
             open={open}
             value={country}
-            items={countries}
+            items={countries.map((item) => ({
+              label: item.name,
+              value: item.countryCode,
+            }))}
             setOpen={setOpen}
             setValue={setCountry}
             placeholder="Страна проживания"

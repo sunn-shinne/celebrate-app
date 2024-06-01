@@ -1,31 +1,83 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import { Colors, Fonsts } from "../constants/styles";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { Colors } from "../constants/styles";
 import { IMainLayoutProps } from "../types/types";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
+import { holidayApi } from "../../api/holidayApi";
 
 const HomeScreen = ({ user, country }: IMainLayoutProps) => {
+  const [date, setDate] = useState(new Date());
+
+  const year = useMemo(() => date.getFullYear().toString(), [date]);
+
+  const {
+    data: holidays,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["holidays", country, year],
+    queryFn: () => holidayApi.getHolidays(year, country),
+    enabled: !!country,
+  });
+
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.content}>
-        <Text>Open up App.js to start working on your app!</Text>
+    <View style={s.container}>
+      <View style={s.dateInfo}>
+        <Text style={s.year}>{year}</Text>
+        <Text>Празднуем {holidays.length} праздников!</Text>
       </View>
+
+      <FlatList
+        style={s.list}
+        data={holidays}
+        onRefresh={refetch}
+        refreshing={isLoading}
+        renderItem={({ item }) => <Text>{item?.localName}</Text>}
+        keyExtractor={(item, index) => `${item?.date}-${index}`}
+        ListFooterComponent={
+          isLoading ? <ActivityIndicator /> : <View style={s.footer} />
+        }
+      />
       <StatusBar style="auto" />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const s = StyleSheet.create({
   container: {
     flex: 1,
+    position: "relative",
+    backgroundColor: Colors.GREAY,
+  },
+
+  dateInfo: {
+    // flex: 1,
+    width: "100%",
+    paddingTop: 15,
+    paddingBottom: 30,
     alignItems: "center",
     backgroundColor: Colors.WHITE,
   },
-  content: {
+
+  year: {
+    fontSize: 48,
+    color: Colors.PRIMARY,
+    fontStyle: "italic",
+  },
+  list: {
     flex: 1,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+  },
+  footer: {
+    height: 24,
   },
 });
 

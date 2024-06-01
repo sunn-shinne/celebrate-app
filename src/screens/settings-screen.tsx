@@ -2,19 +2,18 @@ import { StatusBar } from "expo-status-bar";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { APP_AUTH, APP_DB } from "../../firebaseConfig";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Colors, Radiuses } from "../constants/styles";
 import { doc, setDoc } from "firebase/firestore";
 import DropDownPicker from "react-native-dropdown-picker";
-import Holidays from "date-holidays";
 import Toast from "react-native-toast-message";
 import Input from "../components/input";
 import Button from "../components/button";
 import { Ionicons } from "@expo/vector-icons";
 import { signOut, updateEmail } from "firebase/auth";
 import { IMainLayoutProps } from "../types/types";
-
-const hd = new Holidays();
+import { holidayApi } from "../../api/holidayApi";
+import { useQuery } from "@tanstack/react-query";
 
 const SettingsScreen = ({
   user,
@@ -28,10 +27,11 @@ const SettingsScreen = ({
   const [country, setCountry] = useState<string>(currentCountry);
   const [email, setEmail] = useState<string>(user.email);
   const [open, setOpen] = useState(false);
-  const [countries, setCountries] = useState([]);
 
-  const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const { data: countries = [], isLoading: isLoadingCountries } = useQuery({
+    queryKey: ["countries"],
+    queryFn: async () => await holidayApi.getCountries(),
+  });
 
   const handleUserUpdate = async () => {
     if (loading) {
@@ -49,12 +49,13 @@ const SettingsScreen = ({
 
     try {
       setLoading(true);
+      const userCountry = {
+        countryCode: country,
+        countryName: countries.find((c) => c.countryCode === country).name,
+      };
       await Promise.all([
         updateEmail(user, email),
-        setDoc(doc(store, "users", user.uid), {
-          countryCode: country,
-          countryName: countries.find((item) => item.value === country).label,
-        }),
+        setDoc(doc(store, "users", user.uid), userCountry),
       ]);
       setCurrentCountry(country);
       Toast.show({
@@ -72,36 +73,6 @@ const SettingsScreen = ({
     }
   };
 
-  const getCountries = () => {
-    if (loading) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = hd.getCountries("ru");
-      if (response) {
-        setCountries(
-          Object.entries(response).map(([key, value]) => ({
-            label: value,
-            value: key,
-          })),
-        );
-      }
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Не удалось загрузить список стран",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getCountries();
-  }, []);
-
   return (
     <SafeAreaView style={s.container}>
       <View>
@@ -117,7 +88,10 @@ const SettingsScreen = ({
           <DropDownPicker
             open={open}
             value={country}
-            items={countries}
+            items={countries.map((item) => ({
+              label: item.name,
+              value: item.countryCode,
+            }))}
             setOpen={setOpen}
             setValue={setCountry}
             placeholder="Страна"
@@ -138,36 +112,9 @@ const SettingsScreen = ({
             loading={loading}
             onPress={handleUserUpdate}
             disabled={!countries.length}
-            color={Colors.SECONDARY}
+            color={Colors.PRIMARY}
           />
         </View>
-
-        {/* <View style={s.user}>
-          <Text style={s.userTitle}>Изменить пароль</Text>
-          <Input
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            textContentType="password"
-            placeholder="Введите пароль"
-          />
-
-          <Input
-            secureTextEntry
-            value={newPassword}
-            onChangeText={setNewPassword}
-            textContentType="newPassword"
-            placeholder="Введите новый пароль"
-          />
-
-          <Button
-            title="Сохранить"
-            loading={loading}
-            onPress={handleUserUpdate}
-            disabled={!countries.length}
-            color={Colors.SECONDARY}
-          />
-        </View> */}
       </View>
 
       <Pressable onPress={() => signOut(auth)} style={s.exit}>
