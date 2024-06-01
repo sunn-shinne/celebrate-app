@@ -44,7 +44,7 @@ const LoginScreen = ({ navigation }) => {
       await signInWithEmailAndPassword(auth, email.trim(), password.trim());
     } catch (error) {
       Toast.show({
-        type: "info",
+        type: "error",
         text1: error.message,
       });
     } finally {

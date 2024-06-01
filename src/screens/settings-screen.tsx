@@ -62,6 +62,7 @@ const SettingsScreen = ({
         type: "success",
         text1: "Изменения сохранены",
         autoHide: true,
+        visibilityTime: 2000,
       });
     } catch (e) {
       Toast.show({

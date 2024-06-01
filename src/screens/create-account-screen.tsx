@@ -100,7 +100,7 @@ const CreateAccountScreen = ({ navigation }) => {
       }
     } catch (error) {
       Toast.show({
-        type: "info",
+        type: "error",
         text1: error.message,
       });
     } finally {

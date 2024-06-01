@@ -10,20 +10,21 @@ import {
 } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Image } from "react-native";
-import { Colors, Radiuses } from "./src/constants/styles";
-import { StackNames, RouteNames } from "./src/constants/route-names";
-import CreateAccountScreen from "./src/screens/create-account-screen";
-import LoginScreen from "./src/screens/login-screen";
-import Toast, { InfoToast } from "react-native-toast-message";
-import { User, onAuthStateChanged } from "firebase/auth";
-import { APP_AUTH, APP_DB } from "./firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
-import { IMainLayoutProps } from "./src/types/types";
 import {
   QueryClient,
   QueryClientConfig,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { StackNames, RouteNames } from "./src/constants/route-names";
+import CreateAccountScreen from "./src/screens/create-account-screen";
+import LoginScreen from "./src/screens/login-screen";
+import Toast from "react-native-toast-message";
+import { User, onAuthStateChanged } from "firebase/auth";
+import { APP_AUTH, APP_DB } from "./firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { IMainLayoutProps } from "./src/types/types";
+import CustomToast from "./src/components/custom-toast";
+import { Colors } from "./src/constants/styles";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -41,7 +42,7 @@ const MainLayout = (props: IMainLayoutProps) => {
           title: "",
           headerShadowVisible: false,
           headerBackTitleVisible: false,
-          headerTitle: (props) => (
+          headerTitle: () => (
             <Image
               style={{ height: 30, objectFit: "contain", marginRight: 50 }}
               source={require("./assets/logo.png")}
@@ -149,7 +150,7 @@ export default function App() {
       }
     } catch {
       Toast.show({
-        type: "info",
+        type: "error",
         text1: "Не удалось загрузить вашу страну проживания",
       });
     } finally {
@@ -192,33 +193,7 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>
 
-        <Toast
-          topOffset={60}
-          config={{
-            info: (props) => (
-              <InfoToast
-                {...props}
-                style={{ borderLeftColor: Colors.PRIMARY, width: "90%" }}
-                text1Style={{
-                  fontSize: 14,
-                  fontWeight: "400",
-                  borderRadius: Radiuses.S,
-                }}
-              />
-            ),
-            success: (props) => (
-              <InfoToast
-                {...props}
-                style={{ borderLeftColor: Colors.SECONDARY, width: "90%" }}
-                text1Style={{
-                  fontSize: 14,
-                  fontWeight: "400",
-                  borderRadius: Radiuses.S,
-                }}
-              />
-            ),
-          }}
-        />
+        <CustomToast />
       </QueryClientProvider>
     </SafeAreaProvider>
   );
