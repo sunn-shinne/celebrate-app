@@ -12,7 +12,7 @@ import Button from "../components/button";
 import { Ionicons } from "@expo/vector-icons";
 import { signOut, updateEmail } from "firebase/auth";
 import { IMainLayoutProps } from "../types/types";
-import { holidayApi } from "../../api/holidayApi";
+import { holidayApi } from "../api/holidayApi";
 import { useQuery } from "@tanstack/react-query";
 
 const SettingsScreen = ({

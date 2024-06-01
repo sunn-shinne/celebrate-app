@@ -11,7 +11,7 @@ import Toast from "react-native-toast-message";
 import { RouteNames } from "../constants/route-names";
 import DropDownPicker from "react-native-dropdown-picker";
 import { doc, setDoc } from "firebase/firestore";
-import { holidayApi } from "../../api/holidayApi";
+import { holidayApi } from "../api/holidayApi";
 import { useQuery } from "@tanstack/react-query";
 
 const CreateAccountScreen = ({ navigation }) => {

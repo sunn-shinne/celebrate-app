@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { IHoliday } from "../../api/types";
+import { IHoliday } from "../api/types";
 import { Colors, Radiuses } from "../constants/styles";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";

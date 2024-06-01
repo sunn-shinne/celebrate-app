@@ -6,7 +6,7 @@ import { IMainLayoutProps } from "../types/types";
 import { useQuery } from "@tanstack/react-query";
 import { format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
-import { holidayApi } from "../../api/holidayApi";
+import { holidayApi } from "../api/holidayApi";
 import Holiday from "../components/holiday";
 
 const HomeScreen = ({ user, country }: IMainLayoutProps) => {

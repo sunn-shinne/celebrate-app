@@ -55,7 +55,7 @@ const LoginScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={s.container}>
       <View style={s.content}>
-        <Image source={require("../../assets/logo.png")} style={s.logo} />
+        <Image source={require("../assets/logo.png")} style={s.logo} />
         <View style={s.form}>
           <Input
             value={email}

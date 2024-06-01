@@ -1,146 +1,22 @@
 import { useEffect, useState } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as SplashScreen from "expo-splash-screen";
-import HomeScreen from "./src/screens/home-screen";
-import SettingsScreen from "./src/screens/settings-screen";
 import {
   SafeAreaProvider,
   initialWindowMetrics,
 } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Image } from "react-native";
 import {
   QueryClient,
   QueryClientConfig,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { StackNames, RouteNames } from "./src/constants/route-names";
-import CreateAccountScreen from "./src/screens/create-account-screen";
-import LoginScreen from "./src/screens/login-screen";
 import Toast from "react-native-toast-message";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { APP_AUTH, APP_DB } from "./firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-import { IMainLayoutProps } from "./src/types/types";
 import CustomToast from "./src/components/custom-toast";
-import { Colors } from "./src/constants/styles";
-import WorldwideScreen from "./src/screens/worldwide-screen";
+import Router from "./src/navigation/router";
 
 SplashScreen.preventAutoHideAsync();
-
-const Stack = createNativeStackNavigator();
-const MainStack = createNativeStackNavigator();
-const AuthStack = createNativeStackNavigator();
-
-const MainLayout = (props: IMainLayoutProps) => {
-  return (
-    <MainStack.Navigator initialRouteName={RouteNames.Home}>
-      <MainStack.Screen
-        name={RouteNames.Home}
-        children={() => <HomeScreen {...props} />}
-        options={({ navigation }) => ({
-          title: "",
-          headerShadowVisible: false,
-          headerBackTitleVisible: false,
-          headerTitle: () => (
-            <Image
-              style={{ height: 30, objectFit: "contain", marginRight: 174 }}
-              source={require("./assets/logo.png")}
-            />
-          ),
-          headerRight: () => (
-            <Pressable onPress={() => navigation.navigate(RouteNames.Settings)}>
-              <Ionicons
-                name="settings-outline"
-                color={Colors.SECONDARY}
-                size={24}
-              />
-            </Pressable>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.navigate(RouteNames.Worldwide)}
-            >
-              <Ionicons
-                name="globe-outline"
-                color={Colors.SECONDARY}
-                size={24}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <MainStack.Screen
-        name={RouteNames.Settings}
-        children={() => <SettingsScreen {...props} />}
-        options={({ navigation }) => ({
-          title: "Настройки",
-          headerShadowVisible: false,
-          headerBackTitleVisible: false,
-          headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                size={24}
-                color={Colors.SECONDARY}
-                name="arrow-back-outline"
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <MainStack.Screen
-        name={RouteNames.Worldwide}
-        component={WorldwideScreen}
-        options={({ navigation }) => ({
-          title: "",
-          headerShadowVisible: false,
-          headerBackTitleVisible: false,
-          headerLeft: () => (
-            <Pressable onPress={() => navigation.navigate(RouteNames.Home)}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={24}
-                color={Colors.SECONDARY}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-    </MainStack.Navigator>
-  );
-};
-
-const AuthLayout = () => {
-  return (
-    <AuthStack.Navigator initialRouteName={RouteNames.CreateAccount}>
-      <AuthStack.Screen
-        name={RouteNames.CreateAccount}
-        component={CreateAccountScreen}
-        options={{ headerShown: false }}
-      />
-
-      <AuthStack.Screen
-        name={RouteNames.Login}
-        component={LoginScreen}
-        options={({ navigation }) => ({
-          title: "",
-          headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={24}
-                color={Colors.SECONDARY}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-    </AuthStack.Navigator>
-  );
-};
 
 const QUERY_CLIENT_CONFIG: QueryClientConfig = {
   defaultOptions: {
@@ -200,30 +76,7 @@ export default function App() {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <QueryClientProvider client={queryClient}>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName={RouteNames.CreateAccount}>
-            {user ? (
-              <Stack.Screen
-                name={StackNames.Main}
-                options={{ headerShown: false }}
-                children={() => (
-                  <MainLayout
-                    user={user}
-                    country={country}
-                    setCountry={setCountry}
-                  />
-                )}
-              />
-            ) : (
-              <Stack.Screen
-                name={StackNames.Auth}
-                component={AuthLayout}
-                options={{ headerShown: false }}
-              />
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
-
+        <Router user={user} country={country} setCountry={setCountry} />
         <CustomToast />
       </QueryClientProvider>
     </SafeAreaProvider>
