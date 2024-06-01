@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as SplashScreen from "expo-splash-screen";
@@ -7,7 +8,6 @@ import {
   SafeAreaProvider,
   initialWindowMetrics,
 } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable } from "react-native";
 import { Colors, Radiuses } from "./src/constants/styles";
@@ -16,8 +16,9 @@ import CreateAccountScreen from "./src/screens/create-account-screen";
 import LoginScreen from "./src/screens/login-screen";
 import Toast, { InfoToast } from "react-native-toast-message";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { CELEBRATE_AUTH, CELEBRATE_DB } from "./firebaseConfig";
+import { APP_AUTH, APP_DB } from "./firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { IMainLayoutProps } from "./src/types/types";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,12 +26,12 @@ const Stack = createNativeStackNavigator();
 const MainStack = createNativeStackNavigator();
 const AuthStack = createNativeStackNavigator();
 
-const MainLayout = () => {
+const MainLayout = (props: IMainLayoutProps) => {
   return (
     <MainStack.Navigator initialRouteName={RouteNames.CreateAccount}>
       <MainStack.Screen
         name={RouteNames.Home}
-        component={HomeScreen}
+        children={() => <HomeScreen {...props} />}
         options={({ navigation }) => ({
           title: "Что сегодня празднуем?",
           headerRight: () => (
@@ -47,7 +48,7 @@ const MainLayout = () => {
 
       <MainStack.Screen
         name={RouteNames.Settings}
-        component={SettingsScreen}
+        children={() => <SettingsScreen {...props} />}
         options={({ navigation }) => ({
           title: "Настройки",
           headerLeft: () => (
@@ -96,23 +97,42 @@ const AuthLayout = () => {
 
 export default function App() {
   const [user, setUser] = useState<User>(null);
+  const [loading, setLoading] = useState(false);
   const [country, setCountry] = useState<string>(null);
 
-  const getUsersCountry = async () => {
-    const docRef = doc(CELEBRATE_DB, "users", CELEBRATE_AUTH.currentUser.uid);
-    const docSnap = await getDoc(docRef);
+  const getUserCountry = async (user: User) => {
+    if (loading) {
+      return;
+    }
 
-    if (docSnap.exists()) {
-      setCountry(docSnap.data().country);
+    if (!user?.uid) {
+      setCountry(null);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const docRef = doc(APP_DB, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const country = docSnap.data();
+        setCountry(country.countryCode);
+      }
+    } catch {
+      Toast.show({
+        type: "info",
+        text1: "Не удалось загрузить вашу страну проживания",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    onAuthStateChanged(CELEBRATE_AUTH, (newUser) => {
-      if (newUser.uid) {
-        setUser(newUser);
-        getUsersCountry();
-      }
+    onAuthStateChanged(APP_AUTH, async (newUser) => {
+      setUser(newUser);
+      await getUserCountry(newUser);
       SplashScreen.hideAsync();
     });
   }, []);
@@ -124,8 +144,14 @@ export default function App() {
           {user ? (
             <Stack.Screen
               name={StackNames.Main}
-              component={MainLayout}
               options={{ headerShown: false }}
+              children={() => (
+                <MainLayout
+                  user={user}
+                  country={country}
+                  setCountry={setCountry}
+                />
+              )}
             />
           ) : (
             <Stack.Screen
@@ -143,7 +169,18 @@ export default function App() {
           info: (props) => (
             <InfoToast
               {...props}
-              style={{ borderLeftColor: Colors.PRIMARY }}
+              style={{ borderLeftColor: Colors.PRIMARY, width: "90%" }}
+              text1Style={{
+                fontSize: 14,
+                fontWeight: "400",
+                borderRadius: Radiuses.S,
+              }}
+            />
+          ),
+          success: (props) => (
+            <InfoToast
+              {...props}
+              style={{ borderLeftColor: Colors.SECONDARY, width: "90%" }}
               text1Style={{
                 fontSize: 14,
                 fontWeight: "400",

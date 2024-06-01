@@ -1,10 +1,10 @@
 import { StatusBar } from "expo-status-bar";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CELEBRATE_AUTH, CELEBRATE_DB } from "../../firebaseConfig";
+import { APP_AUTH, APP_DB } from "../../firebaseConfig";
 import { useEffect, useState } from "react";
 import { Colors, Radiuses } from "../constants/styles";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import DropDownPicker from "react-native-dropdown-picker";
 import Holidays from "date-holidays";
 import Toast from "react-native-toast-message";
@@ -12,17 +12,21 @@ import Input from "../components/input";
 import Button from "../components/button";
 import { Ionicons } from "@expo/vector-icons";
 import { signOut, updateEmail } from "firebase/auth";
-import { RouteNames, StackNames } from "../constants/route-names";
+import { IMainLayoutProps } from "../types/types";
 
 const hd = new Holidays();
 
-const SettingsScreen = ({ navigation }) => {
-  const auth = CELEBRATE_AUTH;
-  const store = CELEBRATE_DB;
+const SettingsScreen = ({
+  user,
+  country: currentCountry,
+  setCountry: setCurrentCountry,
+}: IMainLayoutProps) => {
+  const auth = APP_AUTH;
+  const store = APP_DB;
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [country, setCountry] = useState<string>(null);
-  const [email, setEmail] = useState<string>(auth.currentUser.email);
+  const [country, setCountry] = useState<string>(currentCountry);
+  const [email, setEmail] = useState<string>(user.email);
   const [open, setOpen] = useState(false);
   const [countries, setCountries] = useState([]);
 
@@ -43,33 +47,25 @@ const SettingsScreen = ({ navigation }) => {
     try {
       setLoading(true);
       await Promise.all([
-        updateEmail(auth.currentUser, email),
-        setDoc(doc(store, "users", auth.currentUser.uid), {
-          country,
+        updateEmail(user, email),
+        setDoc(doc(store, "users", user.uid), {
+          countryCode: country,
+          countryName: countries.find((item) => item.value === country).label,
         }),
       ]);
+      setCurrentCountry(country);
       Toast.show({
         type: "success",
         text1: "Изменения сохранены",
         autoHide: true,
       });
     } catch (e) {
-      console.log(e);
       Toast.show({
         type: "error",
-        text1: "Что-то пошло не так",
+        text1: e.message,
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getUsersCountry = async () => {
-    const docRef = doc(CELEBRATE_DB, "users", auth.currentUser.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setCountry(docSnap.data().country);
     }
   };
 
@@ -100,7 +96,6 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    getUsersCountry();
     getCountries();
   }, []);
 
@@ -141,13 +136,7 @@ const SettingsScreen = ({ navigation }) => {
           disabled={!countries.length}
         />
       </View>
-      <Pressable
-        onPress={() => {
-          signOut(auth);
-          // navigation.navigate(StackNames.Auth);
-        }}
-        style={s.exit}
-      >
+      <Pressable onPress={() => signOut(auth)} style={s.exit}>
         <Text style={{ color: Colors.SECONDARY, fontSize: 16 }}>Выйти</Text>
         <Ionicons name="exit-outline" size={18} color={Colors.SECONDARY} />
       </Pressable>

@@ -6,7 +6,7 @@ import { useState } from "react";
 import Button from "../components/button";
 import Input from "../components/input";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { CELEBRATE_AUTH } from "../../firebaseConfig";
+import { APP_AUTH } from "../../firebaseConfig";
 import Toast from "react-native-toast-message";
 import { RouteNames } from "../constants/route-names";
 
@@ -14,7 +14,7 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const auth = CELEBRATE_AUTH;
+  const auth = APP_AUTH;
 
   const handlelogin = async () => {
     if (loading) {
@@ -43,10 +43,9 @@ const LoginScreen = ({ navigation }) => {
       setLoading(true);
       await signInWithEmailAndPassword(auth, email.trim(), password.trim());
     } catch (error) {
-      console.log(error.message);
       Toast.show({
-        type: "error",
-        text1: "Не удалось авторизоваться",
+        type: "info",
+        text1: error.message,
       });
     } finally {
       setLoading(false);

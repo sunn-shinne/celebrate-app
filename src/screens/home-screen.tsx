@@ -2,8 +2,9 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { Colors, Fonsts } from "../constants/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { IMainLayoutProps } from "../types/types";
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ user, country }: IMainLayoutProps) => {
   return (
     <SafeAreaView style={s.container}>
       <View style={s.content}>

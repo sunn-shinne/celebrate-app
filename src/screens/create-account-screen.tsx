@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import Button from "../components/button";
 import Input from "../components/input";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { CELEBRATE_AUTH, CELEBRATE_DB } from "../../firebaseConfig";
+import { APP_AUTH, APP_DB } from "../../firebaseConfig";
 import Toast from "react-native-toast-message";
 import { RouteNames } from "../constants/route-names";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -28,11 +28,13 @@ const CreateAccountScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [country, setCountry] = useState(null);
 
-  const auth = CELEBRATE_AUTH;
-  const store = CELEBRATE_DB;
+  const auth = APP_AUTH;
+  const store = APP_DB;
 
   const [open, setOpen] = useState(false);
-  const [countries, setCountries] = useState([]);
+  const [countries, setCountries] = useState<
+    { label: string; value: string }[]
+  >([]);
 
   const handleCreateAccount = async () => {
     if (loading) {
@@ -84,13 +86,14 @@ const CreateAccountScreen = ({ navigation }) => {
       );
       if (response.user) {
         await setDoc(doc(store, "users", auth.currentUser.uid), {
-          country,
+          countryCode: country,
+          countryName: countries.find((item) => item.value === country).label,
         });
       }
     } catch (error) {
       Toast.show({
-        type: "error",
-        text1: "Не удалось зарегистрировать аккаунт",
+        type: "info",
+        text1: error.message,
       });
     } finally {
       setLoading(false);
