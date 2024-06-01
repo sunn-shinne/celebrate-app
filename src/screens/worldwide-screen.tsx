@@ -2,33 +2,26 @@ import { useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { Colors, Radiuses } from "../constants/styles";
-import { IMainLayoutProps } from "../types/types";
 import { useQuery } from "@tanstack/react-query";
 import { format, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import { holidayApi } from "../../api/holidayApi";
 import Holiday from "../components/holiday";
 
-const HomeScreen = ({ user, country }: IMainLayoutProps) => {
-  const today = new Date();
-  // today.setMonth(4);
-
-  const year = useMemo(() => today.getFullYear().toString(), [today]);
-
+const WorldwideScreen = () => {
   const {
     data: holidays = [],
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["holidays", country, year],
-    queryFn: () => holidayApi.getHolidays(year, country),
-    enabled: !!country,
+    queryKey: ["world-wide-holidays"],
+    queryFn: () => holidayApi.getUpcomingHolidaysWorldwide(),
   });
 
-  const todaysHoliday = useMemo(
-    () => holidays.find((item) => isSameDay(item.date, today)),
-    [today, holidays],
-  );
+  const { data: countries = [], isLoading: isLoadingCountries } = useQuery({
+    queryKey: ["countries"],
+    queryFn: async () => await holidayApi.getCountries(),
+  });
 
   return (
     <View style={s.container}>
@@ -38,30 +31,21 @@ const HomeScreen = ({ user, country }: IMainLayoutProps) => {
         onRefresh={refetch}
         refreshing={isLoading}
         ListHeaderComponent={
-          <>
-            <View style={s.today}>
-              <Text style={s.todayDate}>
-                {format(today, "dd LLLL, iiii", { locale: ru })}
-              </Text>
-
-              {!todaysHoliday && (
-                <Text style={{ fontSize: 12 }}>Сегодня праздника нет :(</Text>
-              )}
-              {todaysHoliday && (
-                <Text style={{ fontStyle: "italic" }}>
-                  {todaysHoliday.localName}
-                </Text>
-              )}
-            </View>
-            <View style={s.stat}>
-              <Text style={s.statYear}>{year}</Text>
-              <Text style={s.statMessage}>
-                Празднуем праздников: {holidays?.length}
-              </Text>
-            </View>
-          </>
+          <View style={s.today}>
+            <Text style={s.todayDate}>Международные праздники</Text>
+            <Text style={s.statMessage}>в ближайшие 7 дней</Text>
+          </View>
         }
-        renderItem={({ item }) => <Holiday holiday={item} />}
+        renderItem={({ item }) => (
+          <Holiday
+            holiday={item}
+            countryName={
+              countries.find(
+                (country) => country.countryCode === item.countryCode,
+              ).name
+            }
+          />
+        )}
         keyExtractor={(item, index) => `${item?.date}-${index}`}
         ListFooterComponent={<View style={s.footer} />}
       />
@@ -120,4 +104,4 @@ const s = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default WorldwideScreen;

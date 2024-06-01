@@ -16,4 +16,11 @@ export const holidayApi = {
     );
     return data;
   },
+
+  getUpcomingHolidaysWorldwide: async (): Promise<IHoliday[]> => {
+    const { data } = await holidayClient.get(
+      `/api/v3/NextPublicHolidaysWorldwide`,
+    );
+    return data;
+  },
 };

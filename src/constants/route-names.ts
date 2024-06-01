@@ -3,6 +3,7 @@ export const RouteNames = {
   Settings: "Settings",
   Login: "Login",
   CreateAccount: "CreateAccount",
+  Worldwide: "CreateAccount",
 };
 
 export const StackNames = {

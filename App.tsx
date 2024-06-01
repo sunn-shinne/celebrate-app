@@ -25,6 +25,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { IMainLayoutProps } from "./src/types/types";
 import CustomToast from "./src/components/custom-toast";
 import { Colors } from "./src/constants/styles";
+import WorldwideScreen from "./src/screens/worldwide-screen";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,7 +45,7 @@ const MainLayout = (props: IMainLayoutProps) => {
           headerBackTitleVisible: false,
           headerTitle: () => (
             <Image
-              style={{ height: 30, objectFit: "contain", marginRight: 50 }}
+              style={{ height: 30, objectFit: "contain", marginRight: 174 }}
               source={require("./assets/logo.png")}
             />
           ),
@@ -52,6 +53,17 @@ const MainLayout = (props: IMainLayoutProps) => {
             <Pressable onPress={() => navigation.navigate(RouteNames.Settings)}>
               <Ionicons
                 name="settings-outline"
+                color={Colors.SECONDARY}
+                size={24}
+              />
+            </Pressable>
+          ),
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.navigate(RouteNames.Worldwide)}
+            >
+              <Ionicons
+                name="globe-outline"
                 color={Colors.SECONDARY}
                 size={24}
               />
@@ -69,6 +81,25 @@ const MainLayout = (props: IMainLayoutProps) => {
           headerBackTitleVisible: false,
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                size={24}
+                color={Colors.SECONDARY}
+                name="arrow-back-outline"
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <MainStack.Screen
+        name={RouteNames.Worldwide}
+        component={WorldwideScreen}
+        options={({ navigation }) => ({
+          title: "",
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.navigate(RouteNames.Home)}>
               <Ionicons
                 name="arrow-back-outline"
                 size={24}
