@@ -9,7 +9,7 @@ import {
   initialWindowMetrics,
 } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable } from "react-native";
+import { Pressable, Image } from "react-native";
 import { Colors, Radiuses } from "./src/constants/styles";
 import { StackNames, RouteNames } from "./src/constants/route-names";
 import CreateAccountScreen from "./src/screens/create-account-screen";
@@ -24,7 +24,6 @@ import {
   QueryClientConfig,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { holidayApi } from "./api/holidayApi";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,9 +39,14 @@ const MainLayout = (props: IMainLayoutProps) => {
         children={() => <HomeScreen {...props} />}
         options={({ navigation }) => ({
           title: "",
-          // headerStyle: { backgroundColor: Colors.GREAY },
-          headerShadowVisible: false, // applied here
+          headerShadowVisible: false,
           headerBackTitleVisible: false,
+          headerTitle: (props) => (
+            <Image
+              style={{ height: 30, objectFit: "contain", marginRight: 50 }}
+              source={require("./assets/logo.png")}
+            />
+          ),
           headerRight: () => (
             <Pressable onPress={() => navigation.navigate(RouteNames.Settings)}>
               <Ionicons
@@ -60,6 +64,8 @@ const MainLayout = (props: IMainLayoutProps) => {
         children={() => <SettingsScreen {...props} />}
         options={({ navigation }) => ({
           title: "Настройки",
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
@@ -164,7 +170,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <NavigationContainer>
           <Stack.Navigator initialRouteName={RouteNames.CreateAccount}>
-            {user && country ? (
+            {user ? (
               <Stack.Screen
                 name={StackNames.Main}
                 options={{ headerShown: false }}

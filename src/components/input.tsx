@@ -27,6 +27,7 @@ const s = StyleSheet.create({
     borderRadius: Radiuses.M,
     alignItems: "center",
     height: 50,
+    backgroundColor: Colors.WHITE,
   },
   inputFocused: {
     borderColor: Colors.SECONDARY,

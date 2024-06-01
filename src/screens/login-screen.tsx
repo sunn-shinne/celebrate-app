@@ -101,7 +101,7 @@ const s = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     paddingHorizontal: 60,
-    paddingTop: 90,
+    paddingTop: 50,
   },
   logo: {
     width: 200,

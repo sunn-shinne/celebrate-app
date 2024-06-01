@@ -74,7 +74,7 @@ const SettingsScreen = ({
   };
 
   return (
-    <SafeAreaView style={s.container}>
+    <View style={s.container}>
       <View>
         <View style={s.user}>
           <Text style={s.userTitle}>Пользователь</Text>
@@ -122,7 +122,7 @@ const SettingsScreen = ({
         <Ionicons name="exit-outline" size={18} color={Colors.SECONDARY} />
       </Pressable>
       <StatusBar style="auto" />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -130,13 +130,20 @@ const s = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "space-between",
-    backgroundColor: Colors.WHITE,
-    paddingHorizontal: 12,
   },
-  user: { gap: 12, marginBottom: 48 },
+  user: {
+    gap: 12,
+    paddingTop: 15,
+    paddingBottom: 30,
+    paddingHorizontal: 12,
+    marginBottom: 48,
+    backgroundColor: Colors.WHITE,
+    borderBottomRightRadius: Radiuses.M,
+    borderBottomLeftRadius: Radiuses.M,
+  },
   userTitle: { fontSize: 16, fontWeight: "500", paddingHorizontal: 12 },
   exit: {
-    marginBottom: 24,
+    marginBottom: 64,
     alignSelf: "center",
     flexDirection: "row",
     gap: 4,
