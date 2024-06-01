@@ -1,5 +1,10 @@
 {
   "extends": "expo/tsconfig.base",
-  "compilerOptions": { "skipLibCheck": true },
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "paths": {
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
+    }
+  },
   "include": ["**/*.ts", "**/*.tsx", "firebaseConfig.jt"]
 }

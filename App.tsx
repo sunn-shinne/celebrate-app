@@ -35,7 +35,7 @@ const AuthStack = createNativeStackNavigator();
 
 const MainLayout = (props: IMainLayoutProps) => {
   return (
-    <MainStack.Navigator initialRouteName={RouteNames.CreateAccount}>
+    <MainStack.Navigator initialRouteName={RouteNames.Home}>
       <MainStack.Screen
         name={RouteNames.Home}
         children={() => <HomeScreen {...props} />}
